@@ -191,7 +191,19 @@ def get_data(url: str) -> Dict[str, Any]:
     raise ValueError('Unable to parse song data')
 
 
-def main() -> None:
+def main(url, transpose) -> None:
+
+    # Get json data
+    data = get_data(url)
+
+    # Remove useless crap
+    data = data['store']['page']['data']['tab_view']
+
+    a = typedload.load(data, TabView)
+    a.wiki_tab.print(transpose)
+
+
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--version', action='version', version=VERSION)
     parser.add_argument('--transpose', '-t', help='Transposes the chords of n semitones',
@@ -199,16 +211,4 @@ def main() -> None:
 
     parser.add_argument("url")
     args = parser.parse_args()
-
-    # Get json data
-    data = get_data(args.url)
-
-    # Remove useless crap
-    data = data['store']['page']['data']['tab_view']
-
-    a = typedload.load(data, TabView)
-    a.wiki_tab.print(args.transpose)
-
-
-if __name__ == '__main__':
-    main()
+    main(args.url, args.transpose)
