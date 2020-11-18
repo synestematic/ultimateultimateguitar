@@ -171,12 +171,13 @@ def get_data(url: str) -> Dict[str, Any]:
     From a url of ultimate-guitar, this function returns
     the actual data, which is stored as json.
     """
-    lineheader = b'<div class="js-store" data-content="'
     cache = Cache()
-
     content = cache.get(url)
+    if content:
+        return json.loads(content)
 
-    if content is None:
+    try:
+        lineheader = b'<div class="js-store" data-content="'
         with urlopen(url) as f:
             for i in f:
                 i = i.strip()
@@ -186,15 +187,16 @@ def get_data(url: str) -> Dict[str, Any]:
                     content = unescaped.encode('utf8')
                     cache.set(url, content)
                     return json.loads(content)
-    else:
-        return json.loads(content)
-    raise ValueError('Unable to parse song data')
+    except:
+        return {}
 
 
-def main(url, transpose) -> None:
+def main(url: str, transpose: int) -> None:
 
     # Get json data
     data = get_data(url)
+    if not data:
+        raise Exception('Unable to get UG data')
 
     # Remove useless crap
     data = data['store']['page']['data']['tab_view']
